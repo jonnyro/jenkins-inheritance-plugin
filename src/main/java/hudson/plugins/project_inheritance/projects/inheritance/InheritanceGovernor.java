@@ -25,9 +25,12 @@ import hudson.cli.BuildCommand;
 import hudson.model.Build;
 import hudson.model.Describable;
 import hudson.model.Saveable;
+import hudson.model.AbstractBuild.AbstractRunner;
+import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.model.Queue;
+import hudson.model.listeners.RunListener;
 import hudson.plugins.project_inheritance.projects.InheritanceProject;
 import hudson.plugins.project_inheritance.projects.InheritanceProject.IMode;
 import hudson.plugins.project_inheritance.projects.references.AbstractProjectReference;
@@ -64,7 +67,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @param <T> the target type of the field this helper is written for.
  */
 public abstract class InheritanceGovernor<T> {
-	public static final Pattern runUriRegExp = Pattern.compile(".*/job/[^/]+/[0-9]+/.*");
+	public static final Pattern runUriRegExp = Pattern.compile(".*/job/[^/]+/(?!configure)(?!createItem)(?!configSubmit).*");
 	
 	public final String fieldName;
 	public final SELECTOR orderMode;
@@ -429,9 +432,23 @@ public abstract class InheritanceGovernor<T> {
 						InheritanceProject.class,
 						"doBuild", "scheduleBuild2", "doBuildWithParameters"
 				) ||
+				//for scmtriggr / polling
+				Reflection.calledFromMethod(
+						AbstractProject.class,
+						"poll"
+				) ||
+				// for all triggers
 				Reflection.calledFromMethod(
 						Trigger.class,
 						"checkTriggers"
+				) ||
+				Reflection.calledFromMethod(
+						RunListener.class,
+						"onCompleted"
+				) ||
+				Reflection.calledFromMethod(
+						AbstractRunner.class,
+						"post2"
 				)) {
 			return true;
 		}
