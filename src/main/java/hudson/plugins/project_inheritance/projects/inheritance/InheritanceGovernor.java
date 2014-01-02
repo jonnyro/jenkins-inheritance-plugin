@@ -430,7 +430,7 @@ public abstract class InheritanceGovernor<T> {
 				) ||
 				Reflection.calledFromMethod(
 						InheritanceProject.class,
-						"doBuild", "scheduleBuild2", "doBuildWithParameters"
+						"doBuild", "scheduleBuild2", "doBuildWithParameters", "buildDependencyGraph"
 				) ||
 				//for scmtriggr / polling
 				Reflection.calledFromMethod(
